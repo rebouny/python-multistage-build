@@ -13,6 +13,7 @@ setup(
     long_description=readme,
     author='Martin Schuh',
     author_email='development@rebouny.net',
+    packages=find_packages(exclude=('tests', 'docs')),
     entry_points={
         "console_scripts": [
             "myapp = myapp.__main__:main"
