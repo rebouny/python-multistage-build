@@ -1,0 +1,2 @@
+wheel
+mariadb==1.0.11

@@ -1,0 +1,29 @@
+FROM python:3.10-slim AS compile-image
+
+RUN apt-get update \
+ && apt-get install --no-install-recommends build-essential gcc -y \
+ && apt-get install libmariadb-dev -y
+
+WORKDIR /usr/src/app
+
+COPY requirements.txt setup.py README.rst ./
+COPY myapp/ ./myapp/
+
+RUN python -m pip install --upgrade pip \
+ && python -m pip wheel . --wheel-dir=/usr/src/wheels -r requirements.txt
+ 
+FROM python:3.10-slim AS runtime-image
+
+WORKDIR /usr/src/wheels
+
+RUN apt-get update \
+ && apt-get install libmariadb3 -y
+
+COPY --from=compile-image /usr/src/wheels /usr/src/wheels/
+COPY requirements.txt .
+
+RUN python -m pip install --upgrade pip
+RUN python -m pip install --no-index --find-links=/usr/src/wheels -r requirements.txt
+RUN python -m pip install --no-index --find-links=/usr/src/wheels myapp
+
+CMD python -m myapp

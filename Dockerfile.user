@@ -1,0 +1,27 @@
+FROM python:3.10-slim AS compile-image
+
+RUN apt-get update \
+ && apt-get install --no-install-recommends build-essential gcc -y \
+ && apt-get install libmariadb-dev -y
+
+WORKDIR /usr/src/app
+
+COPY requirements.txt setup.py README.rst ./
+COPY myapp/ ./myapp/
+
+RUN python -m pip install --upgrade pip \
+ && python -m pip install --user -r requirements.txt \
+ && python -m pip install --user .
+ 
+FROM python:3.10-slim AS runtime-image
+
+#WORKDIR /usr/src/app
+
+COPY --from=compile-image /root/.local /root/.local/
+#COPY --from=compile-image /usr/src/app/dist ./
+
+#RUN python -m pip install --user *.whl
+
+ENV PATH=/root/.local/bin:$PATH
+
+CMD [ "python", "-m", "myapp" ]

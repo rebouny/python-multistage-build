@@ -1,0 +1,15 @@
+FROM debian:bullseye-slim AS compile-image
+
+RUN apt-get update \
+ && apt-get install --no-install-recommends gcc build-essential -y
+
+WORKDIR /usr/src/app
+
+COPY hello.c .
+RUN gcc -o helloworld hello.c
+
+FROM debian:bullseye-slim AS runtime-image 
+
+COPY --from=compile-image /usr/src/app/helloworld .
+
+CMD ["./helloworld"]
